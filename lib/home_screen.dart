@@ -1,36 +1,39 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:learning_bloc/blocs/home_cubit/home_cubit.dart';
+import 'package:learning_bloc/counter_bloc.dart';
 
-class HomeScreen extends StatelessWidget {
+class CounterPage extends StatelessWidget {
+  const CounterPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.read<HomeCubit>().updateInfo(
-              value: "lol",
-              length: context.read<HomeCubit>().state.productItems.length);
+      appBar: AppBar(title: const Text('Counter')),
+      body: BlocBuilder<CounterBloc, List>(
+        builder: (context, count) {
+          return ListView.builder(
+            itemCount: count.length,
+            itemBuilder: (context, index) => Text('231'),
+          );
         },
       ),
-      backgroundColor: Colors.white,
-      body: Column(children: [
-        SizedBox(
-          height: 350,
-          child: BlocBuilder<HomeCubit, HomeCubitState>(
-            builder: (context, state) => state.maybeMap(
-                init: (initState) => ListView.builder(
-                    itemCount: initState.productItems.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        margin: const EdgeInsets.all(10),
-                        child: Text(initState.productItems[index] ?? ''),
-                      );
-                    }),
-                orElse: () => SizedBox()),
-          ),
-        )
-      ]),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+              context: context,
+              builder: (context) => Container(
+                    child: TextButton(
+                        onPressed: () {
+                          context
+                              .read<CounterBloc>()
+                              .add(CounterIncrementPressed());
+                        },
+                        child: Text('ADD')),
+                  ));
+        },
+      ),
     );
   }
 }
