@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "command",
+            "name": "run config debug",
+            "program": "C:/Program Files/WindowsApps/Microsoft.WindowsTerminal_1.16.10261.0_x64__8wekyb3d8bbwe/wt.exe",
+            "args": [
+                "flutter",
+                "run",
+                "--debug"
+            ]
+        }
+    ]
+}
