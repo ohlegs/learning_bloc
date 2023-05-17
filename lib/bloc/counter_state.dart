@@ -1,21 +1,21 @@
 part of 'counter_bloc.dart';
 
 @immutable
-class CounterBlocState {
-  List<num> counter = [];
-  CounterBlocState({
-    required this.counter,
+class ListBlocState {
+  List<ItemListModel> list = [];
+  ListBlocState({
+    required this.list,
   });
 }
 
-class CounterInitial extends CounterBlocState {
-  CounterInitial() : super(counter: []);
+class CounterInitial extends ListBlocState {
+  CounterInitial() : super(list: []);
 }
 
-class IncrementState extends CounterBlocState {
-  IncrementState(List<num> increment) : super(counter: increment);
+class AddNewState extends ListBlocState {
+  AddNewState(List<ItemListModel> increment) : super(list: increment);
 }
 
-class DecrementState extends CounterBlocState {
-  DecrementState(List<num> increment) : super(counter: increment);
+class DecrementState extends ListBlocState {
+  DecrementState(List<ItemListModel> increment) : super(list: increment);
 }

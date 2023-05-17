@@ -1,19 +1,37 @@
+import 'dart:convert';
+
 import 'package:hive/hive.dart';
+import 'package:learning_bloc/model/list_item_model.dart';
+
+const String BOX_TASKS = "tasks";
+const String KEY_TASK_LIST = 'taskList';
 
 class DBController {
-  final String nameBox;
-  late Box<String> box;
+  Future<List<ItemListModel>> getTask() async {
+    List<ItemListModel> getTasks = [];
+    final box = await Hive.openBox(BOX_TASKS);
+    if (box.isNotEmpty) {
+      final String jsonString = box.get(KEY_TASK_LIST) ?? '';
+      final List<dynamic> jsonList = json.decode(jsonString);
+      if (jsonList.isNotEmpty) {
+        print(jsonList);
+        getTasks = jsonList.map((e) => ItemListModel.fromJson(e)).toList();
+      }
+    }
 
-  DBController({this.nameBox = "tasks"}) {
-    _openBox();
+    return getTasks;
   }
 
-  _openBox() async {
-    this.box = await Hive.openBox("tasks");
+  static addTask({required List<ItemListModel> newListTask}) async {
+    final box = await Hive.openBox(BOX_TASKS);
+    box.put(KEY_TASK_LIST, json.encode(newListTask));
   }
 
-  getTask() {}
-  addTask() {}
-  removeTask() {}
-  updateTask() {}
+  removeTask() async {
+    final box = await Hive.openBox(BOX_TASKS);
+  }
+
+  updateTask() async {
+    final box = await Hive.openBox(BOX_TASKS);
+  }
 }
