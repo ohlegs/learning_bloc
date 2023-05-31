@@ -22,8 +22,8 @@ class _SecondScreenState extends State<SecondScreen> {
 
   String _stateValueInputName = '';
   String _stateValueInputDescription = '';
-  DateTime _selectedDate = DateTime.now();
-  TimeOfDay _selectedTime = TimeOfDay.now();
+  num _selectedMinutes = 00;
+  num _selectedHours = 00;
 
   @override
   Widget build(BuildContext context) {
@@ -128,13 +128,11 @@ class _SecondScreenState extends State<SecondScreen> {
                           });
                         },
                         controller: nameInputController,
-
                         decoration: const InputDecoration(
                           suffixIcon: Icon(Icons.assignment_add),
                           enabledBorder: UnderlineInputBorder(),
                           label: Text("Enter the name task"),
                         ),
-                        // The validator receives the text that the user has entered.
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter some text';
@@ -173,7 +171,7 @@ class _SecondScreenState extends State<SecondScreen> {
                       child: TextFormField(
                         enableInteractiveSelection: false,
                         onTap: () {
-                          FocusScope.of(context).requestFocus(new FocusNode());
+                          FocusScope.of(context).requestFocus(FocusNode());
                         },
                         maxLines: 1,
                         readOnly: true,
@@ -182,12 +180,12 @@ class _SecondScreenState extends State<SecondScreen> {
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                               onPressed: () {
-                                _selectDate(context);
+                                _showMyDialog();
                               },
                               icon: const Icon(
                                   color: Colors.black, Icons.edit_calendar)),
                           enabledBorder: const UnderlineInputBorder(),
-                          label: const Text("Deadline"),
+                          label: const Text("Time for the task"),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -205,46 +203,67 @@ class _SecondScreenState extends State<SecondScreen> {
     );
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-        helpText: "Select the deadline for completing the task",
-        context: context,
-        initialDate: _selectedDate,
-        firstDate: DateTime(2015),
-        lastDate: DateTime(2100));
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-    _selectTime();
-  }
-
-  Future<void> _selectTime() async {
-    TimeOfDay? picked = await showTimePicker(
+  Future<void> _showMyDialog() async {
+    final String? result = await showDialog(
+      useSafeArea: true,
       context: context,
-      initialTime: _selectedTime,
-      builder: (BuildContext context, Widget? child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
+      builder: (context) {
+        TextEditingController controllerHours =
+            TextEditingController(text: "00");
+        TextEditingController controllerMinutes =
+            TextEditingController(text: "00");
+
+        return AlertDialog(
+          title: const Text('Set the time to complete the task.'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: controllerHours,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      label: Text("Hours"), border: OutlineInputBorder()),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  child: TextField(
+                    controller: controllerMinutes,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                        label: Text("Minutes"), border: OutlineInputBorder()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+                child: const Text('Set'),
+                onPressed: () async {
+                  Navigator.pop(context,
+                      "${controllerHours.text}:${controllerMinutes.text}");
+                }),
+          ],
         );
       },
     );
-    if (picked != null && picked != _selectedTime) {
+    if (result != null) {
+      List<String> timeParts = result.split(':');
       setState(() {
-        _selectedTime = picked;
+        _selectedHours = int.parse(timeParts[0]);
+        _selectedMinutes = int.parse(timeParts[1]);
       });
+      dateTimeInputConttroller.text =
+          "${_selectedHours.toString().padLeft(2, '0')}h:${_selectedMinutes.toString().padLeft(2, '0')}m";
     }
-
-    dateTimeInputConttroller.text =
-        '${_selectedDate.day}.${_selectedDate.month}.${_selectedDate.year} ,${_selectedTime.hour}:${_selectedTime.minute}';
   }
 
   @override
   void initState() {
+    print("LOLOLO");
+    print(_selectedHours);
     dateTimeInputConttroller.text =
-        '${_selectedDate.day}.${_selectedDate.month}.${_selectedDate.year} ,${_selectedTime.hour}:${_selectedTime.minute}';
+        "${_selectedHours.toString().padLeft(2, '0')}h:${_selectedMinutes.toString().padLeft(2, '0')}m";
     setState(() {
       _selectedRadio = 0;
     });
@@ -260,42 +279,39 @@ class _SecondScreenState extends State<SecondScreen> {
   _submit() {
     final bloc = BlocProvider.of<ListBloc>(context);
     final ItemListModel resultData = ItemListModel(
+        complitedTime: "null",
         descriptionTask: _stateValueInputDescription,
         nameTask: _stateValueInputName,
-        selectedDate: _selectedDate.toString(),
-        selectedTime: "${_selectedTime.hour}:${_selectedTime.minute}",
+        selectedTime: "${_selectedHours}:${_selectedMinutes}",
         colorTask: _selectedRadio,
         createDate: DateTime.now().toString());
-    // print(resultData.toJson());
     bloc.add(ListNewTask(listNewTask: resultData));
     if (_formKey.currentState!.validate()) {
       _clearForm();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.greenAccent.shade400,
-          content: Container(
-            child: Row(
-              children: [
-                const Text(
-                  "Added",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.white),
+          content: Row(
+            children: [
+              const Text(
+                "Added",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.white),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                child: Icon(
+                  Icons.check,
+                  color: Colors.greenAccent.shade400,
                 ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  child: Icon(
-                    Icons.check,
-                    color: Colors.greenAccent.shade400,
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
         ),
       );

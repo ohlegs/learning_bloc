@@ -1,60 +1,34 @@
 class TimeConverter {
-  late DateTime _time;
-  late String _date;
-  late String _dateCreate;
+  late int _hours;
+  late int _minutes;
   late num procent;
-  TimeConverter();
+  late num allSeconds;
 
-  set time(timeStr) {
-    DateTime dt;
-
-    if (timeStr != null) {
-      List<String> timeParts = timeStr.split(':');
+  set deadlineTime(String deadlineTime) {
+    if (deadlineTime != null) {
+      List<String> timeParts = deadlineTime.split(':');
       final int hours = int.parse(timeParts[0]);
       final int minutes = int.parse(timeParts[1]);
-      dt = DateTime(2022, 1, 1, hours, minutes);
-      _time = dt;
-    } else {
-      throw Exception("DateTime.tryParse == false");
+      _hours = hours;
+      _minutes = minutes;
     }
+    getSecond();
   }
 
-  set date(String dateStr) {
-    _date = dateStr;
-  }
+  getSecond() {
+    if (_hours != null && _minutes != null) {
+      print('_hours: $_hours _minutes: $_minutes');
 
-  set dateCreate(String dateStr) {
-    _dateCreate = dateStr;
-  }
-
-  String get dateCreate => _dateCreate;
-  DateTime get time => _time;
-  String get date => _date;
-
-  int getSecond() {
-    if (_time != null) {
-      return _time.hour * 60 * 60 + _time.minute;
+      allSeconds = (_hours * 60 * 60) + (_minutes * 60);
     }
-    throw Exception("Invalid state: _time is $_time");
   }
 
   num getProcentFromTime(num tick) {
-    final allSeconds = dateDifference();
-    print(allSeconds);
     final coefficient = allSeconds / tick;
     final procent = 100 / coefficient;
     this.procent = procent;
     print('allSeconds: ${allSeconds} procent: ${procent}');
     return double.parse(procent.toStringAsFixed(2));
-  }
-
-  dateDifference() {
-    if (DateTime.tryParse(date) != null) {
-      Duration difference =
-          DateTime.parse(date).difference(DateTime.parse(dateCreate));
-
-      return difference.inSeconds + getSecond();
-    }
   }
 
   num procentToNumber(int width) {

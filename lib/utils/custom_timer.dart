@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 
 class CustomTimer {
   Timer? _timer;
+  int _tick = 0;
 
   startTimer(Function callback) {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      print(timer.tick);
-      callback(timer.tick);
+      _tick = timer.tick;
+      callback(_tick);
     });
   }
 

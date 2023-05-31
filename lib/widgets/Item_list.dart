@@ -7,6 +7,7 @@ import 'package:learning_bloc/constants/constants.dart';
 import 'package:learning_bloc/model/list_item_model.dart';
 import 'package:learning_bloc/utils/time_converter.dart';
 import 'package:learning_bloc/utils/custom_timer.dart';
+import 'package:vibration/vibration.dart';
 
 class ItemList extends StatefulWidget {
   final ItemListModel dataTask;
@@ -23,15 +24,17 @@ class ItemList extends StatefulWidget {
 class _ItemListState extends State<ItemList> {
   bool pause = true;
   TimeConverter timeConverter = TimeConverter();
-  DateTime? selectedDate;
+  String? selectedDate;
   num compleedProcent = 0;
-  GlobalKey _containerKey = GlobalKey();
+  final GlobalKey _containerKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
-    // double? containerWidth = _containerKey.currentContext?.size?.width;
+    List<String> timeParts = widget.dataTask.selectedTime.split(":");
+    final int hours = int.parse(timeParts[0]);
+    final int minutes = int.parse(timeParts[1]);
 
-    timeConverter.time = widget.dataTask.selectedTime;
+    timeConverter.deadlineTime = widget.dataTask.selectedTime;
     return GestureDetector(
       onLongPress: () {
         final num currentIndex = widget.itemIndex;
@@ -51,7 +54,10 @@ class _ItemListState extends State<ItemList> {
               end: Alignment.centerRight,
               stops: [compleedProcent.toDouble() / 100, 0.0],
               tileMode: TileMode.clamp,
-              colors: [Colors.green, colors[widget.dataTask.colorTask as int]]),
+              colors: [
+                const Color.fromARGB(255, 64, 228, 70),
+                colors[widget.dataTask.colorTask as int]
+              ]),
           borderRadius: const BorderRadius.all(Radius.circular(29)),
         ),
         child: Column(
@@ -72,7 +78,9 @@ class _ItemListState extends State<ItemList> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: colors[widget.dataTask.colorTask as int]),
+                            color: compleedProcent >= 11
+                                ? const Color.fromARGB(255, 64, 228, 70)
+                                : colors[widget.dataTask.colorTask as int]),
                         widget.dataTask.nameTask.length < 15
                             ? widget.dataTask.nameTask
                             : '${widget.dataTask.nameTask.substring(0, 15)}...')),
@@ -84,6 +92,7 @@ class _ItemListState extends State<ItemList> {
             ]),
             const Spacer(),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
                     padding: EdgeInsets.zero,
@@ -92,7 +101,9 @@ class _ItemListState extends State<ItemList> {
                       playButton();
                     },
                     icon: pause
-                        ? const Icon(Icons.play_circle)
+                        ? compleedProcent == 100
+                            ? Icon(Icons.check)
+                            : Icon(Icons.play_circle)
                         : const Icon(Icons.pause_circle)),
                 const Spacer(),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -101,17 +112,9 @@ class _ItemListState extends State<ItemList> {
                       const Icon(Icons.watch_later_outlined),
                       Text(
                           style: const TextStyle(fontWeight: FontWeight.bold),
-                          ' ${widget.dataTask.selectedTime}'),
+                          " ${hours.toString().padLeft(2, '0')}h:${minutes.toString().padLeft(2, '0')}m"),
                     ],
                   ),
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_month),
-                      Text(
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          ' ${selectedDate!.day} ${months[selectedDate!.month]} ${selectedDate!.year}')
-                    ],
-                  )
                 ])
               ],
             )
@@ -123,17 +126,18 @@ class _ItemListState extends State<ItemList> {
 
   @override
   void initState() {
-    selectedDate = DateTime.parse(widget.dataTask.selectedDate);
-
+    selectedDate = widget.dataTask.selectedTime;
     super.initState();
   }
 
   playButton() {
     if (pause == true) {
-      widget.customTimer.startTimer(setProcent);
-      setState(() {
-        pause = false;
-      });
+      if (compleedProcent != 100) {
+        widget.customTimer.startTimer(setProcent);
+        setState(() {
+          pause = false;
+        });
+      }
     } else {
       widget.customTimer.stopTimer();
       setState(() {
@@ -143,17 +147,22 @@ class _ItemListState extends State<ItemList> {
   }
 
   setProcent(tick) {
-    widget.timeConverter.time = widget.dataTask.selectedTime;
-    widget.timeConverter.date = widget.dataTask.selectedDate;
-    widget.timeConverter.dateCreate = widget.dataTask.createDate;
-    double? containerWidth = _containerKey.currentContext?.size?.width;
-    setState(() {
-      compleedProcent = widget.timeConverter.getProcentFromTime(tick);
-    });
+    widget.timeConverter.deadlineTime = widget.dataTask.selectedTime;
+    if (compleedProcent == 100) {
+      widget.customTimer.stopTimer();
+      setState(() {
+        pause = true;
+      });
+    } else {
+      setState(() {
+        compleedProcent = widget.timeConverter.getProcentFromTime(tick);
+      });
+    }
   }
 
   _removeOnLongPress({required currentIndex}) async {
-    final result = await showDialog<num>(
+    Vibration.vibrate(duration: 100);
+    await showDialog<num>(
       context: context,
       builder: (context) => BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -173,6 +182,7 @@ class _ItemListState extends State<ItemList> {
                   onPressed: () {
                     final bloc = BlocProvider.of<ListBloc>(context);
                     bloc.add(RemoveTask(removeByIndex: currentIndex));
+                    Navigator.of(context).pop();
                   },
                   icon: const Icon(Icons.delete_forever),
                   label: const Text('Delete')),

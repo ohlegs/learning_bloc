@@ -28,7 +28,7 @@ class ListBloc extends Bloc<ListEvent, ListBlocState> {
           state.list.sort((a, b) => a.nameTask.compareTo(b.nameTask));
           break;
         case 2:
-          state.list.sort((a, b) => a.selectedDate.compareTo(b.selectedDate));
+          // state.list.sort((a, b) => a.selectedDate.compareTo(b.selectedDate));
           break;
         case 3:
           print("progress");
