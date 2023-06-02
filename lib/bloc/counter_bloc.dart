@@ -13,7 +13,7 @@ class ListBloc extends Bloc<ListEvent, ListBlocState> {
     });
     on<ListNewTask>((event, emit) {
       emit(AddNewState([...state.list, event.listNewTask]));
-      DBController.addTask(newListTask: [...state.list]);
+      DBController.addTask(newListTask: event.listNewTask);
     });
 
     on<SortListBy>((event, emit) {
@@ -21,11 +21,11 @@ class ListBloc extends Bloc<ListEvent, ListBlocState> {
       switch (event.typeSort) {
         case 0:
           //sort by time
-          state.list.sort((a, b) => a.selectedTime.compareTo(b.selectedTime));
+          // state.list.sort((a, b) => a.selectedTime.compareTo(b.selectedTime));
           break;
         case 1:
           //sort by name || alphabet
-          state.list.sort((a, b) => a.nameTask.compareTo(b.nameTask));
+          // state.list.sort((a, b) => a.nameTask.compareTo(b.nameTask));
           break;
         case 2:
           // state.list.sort((a, b) => a.selectedDate.compareTo(b.selectedDate));
@@ -42,7 +42,7 @@ class ListBloc extends Bloc<ListEvent, ListBlocState> {
     on<RemoveTask>((event, emit) {
       state.list.removeAt(event.removeByIndex);
       emit(AddNewState([...state.list]));
-      DBController.addTask(newListTask: [...state.list]);
+      // DBController.addTask(newListTask: [...state.list]);
     });
   }
 }

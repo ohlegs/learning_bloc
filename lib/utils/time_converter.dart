@@ -18,7 +18,6 @@ class TimeConverter {
   getSecond() {
     if (_hours != null && _minutes != null) {
       print('_hours: $_hours _minutes: $_minutes');
-
       allSeconds = (_hours * 60 * 60) + (_minutes * 60);
     }
   }
@@ -27,8 +26,8 @@ class TimeConverter {
     final coefficient = allSeconds / tick;
     final procent = 100 / coefficient;
     this.procent = procent;
-    print('allSeconds: ${allSeconds} procent: ${procent}');
-    return double.parse(procent.toStringAsFixed(2));
+    final result = double.parse(procent.toStringAsFixed(2));
+    return result >= 100 ? 100 : result;
   }
 
   num procentToNumber(int width) {

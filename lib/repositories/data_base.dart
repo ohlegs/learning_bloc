@@ -10,21 +10,21 @@ class DBController {
   Future<List<ItemListModel>> getTask() async {
     List<ItemListModel> getTasks = [];
     final box = await Hive.openBox(BOX_TASKS);
+    print(box.values);
     if (box.isNotEmpty) {
-      final String jsonString = box.get(KEY_TASK_LIST) ?? '';
-      final List<dynamic> jsonList = json.decode(jsonString);
-      if (jsonList.isNotEmpty) {
-        print(jsonList);
-        getTasks = jsonList.map((e) => ItemListModel.fromJson(e)).toList();
-      }
+      final List<ItemListModel> jsonString =
+          box.values.toList().cast<ItemListModel>();
+      getTasks = jsonString;
+      print('\x1B[33m${jsonString.length}\x1B[0m');
     }
-
+    box.close();
     return getTasks;
   }
 
-  static addTask({required List<ItemListModel> newListTask}) async {
+  static addTask({required ItemListModel newListTask}) async {
     final box = await Hive.openBox(BOX_TASKS);
-    box.put(KEY_TASK_LIST, json.encode(newListTask));
+    await box.add(newListTask);
+    print(box.values.length);
   }
 
   removeTask() async {

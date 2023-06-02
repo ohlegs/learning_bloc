@@ -30,11 +30,11 @@ class _ItemListState extends State<ItemList> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> timeParts = widget.dataTask.selectedTime.split(":");
+    List<String> timeParts = widget.dataTask.selectedTime!.split(":");
     final int hours = int.parse(timeParts[0]);
     final int minutes = int.parse(timeParts[1]);
 
-    timeConverter.deadlineTime = widget.dataTask.selectedTime;
+    timeConverter.deadlineTime = widget.dataTask.selectedTime!;
     return GestureDetector(
       onLongPress: () {
         final num currentIndex = widget.itemIndex;
@@ -73,17 +73,18 @@ class _ItemListState extends State<ItemList> {
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                         color: Color.fromRGBO(72, 68, 78, 1)),
                     child: Text(
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: compleedProcent >= 11
-                                ? const Color.fromARGB(255, 64, 228, 70)
-                                : colors[widget.dataTask.colorTask as int]),
-                        widget.dataTask.nameTask.length < 15
-                            ? widget.dataTask.nameTask
-                            : '${widget.dataTask.nameTask.substring(0, 15)}...')),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: compleedProcent >= 11
+                              ? const Color.fromARGB(255, 64, 228, 70)
+                              : colors[widget.dataTask.colorTask as int]),
+                      widget.dataTask.nameTask!.length < 15
+                          ? widget.dataTask.nameTask ?? ''
+                          : '${widget.dataTask.nameTask!.substring(0, 15)}...',
+                    )),
               ),
               const Spacer(),
               Text(
@@ -136,6 +137,7 @@ class _ItemListState extends State<ItemList> {
         widget.customTimer.startTimer(setProcent);
         setState(() {
           pause = false;
+          // widget.customTimer.tick = 30;
         });
       }
     } else {
@@ -147,7 +149,7 @@ class _ItemListState extends State<ItemList> {
   }
 
   setProcent(tick) {
-    widget.timeConverter.deadlineTime = widget.dataTask.selectedTime;
+    widget.timeConverter.deadlineTime = widget.dataTask.selectedTime!;
     if (compleedProcent == 100) {
       widget.customTimer.stopTimer();
       setState(() {
@@ -156,6 +158,7 @@ class _ItemListState extends State<ItemList> {
     } else {
       setState(() {
         compleedProcent = widget.timeConverter.getProcentFromTime(tick);
+        print(compleedProcent);
       });
     }
   }
@@ -215,7 +218,7 @@ class _ItemListState extends State<ItemList> {
                       ),
                     ],
                   ),
-                  Text(fullView.descriptionTask),
+                  Text(fullView.descriptionTask ?? ""),
                 ],
               ),
             ));
